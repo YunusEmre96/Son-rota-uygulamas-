@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -14,6 +15,16 @@ L.Icon.Default.mergeOptions({
     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// Kontrol noktaları için özel sarı ikon
+const yellowIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [20, 33],
+  iconAnchor: [10, 33],
+  popupAnchor: [1, -28],
+  shadowSize: [33, 33]
 });
 
 const Map = () => {
@@ -92,6 +103,10 @@ const Map = () => {
           const route = routes[0];
           if (!route) return;
 
+          // Önceki kontrol noktalarını temizle
+          checkpointMarkers.current.forEach(marker => map.removeLayer(marker));
+          checkpointMarkers.current = [];
+
           let totalDistance = 0;
           let nextCheckpoint = 100000; // 100 km (metre cinsinden)
 
@@ -102,7 +117,7 @@ const Map = () => {
             }
 
             if (totalDistance >= nextCheckpoint) {
-                const checkpointMarker = L.marker(coord)
+                const checkpointMarker = L.marker(coord, { icon: yellowIcon })
                     .addTo(map)
                     .bindPopup(`Kontrol Noktası: ${Math.round(nextCheckpoint / 1000)} km`);
                 checkpointMarkers.current.push(checkpointMarker);
