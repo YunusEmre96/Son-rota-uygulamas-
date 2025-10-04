@@ -25,20 +25,12 @@ const Map = () => {
   const startMarker = useRef<L.Marker | null>(null);
   const endMarker = useRef<L.Marker | null>(null);
   const routingControl = useRef<L.Routing.Control | null>(null);
-  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-
 
   // Boş bağımlılık dizisine sahip useEffect kancası, bileşen DOM'a eklendikten sonra yalnızca bir kez çalışır.
   // Bu, 'map' div'inin DOM'da bulunması garanti edildiği için haritayı başlatmak için doğru yerdir.
   useEffect(() => {
     // Harita zaten başlatılmışsa, tekrar başlatmayı önle.
     if (mapRef.current) return;
-
-    if (!accessToken || accessToken === "YOUR_MAPBOX_ACCESS_TOKEN_HERE") {
-        console.error("Mapbox API anahtarı eksik! Lütfen .env.local dosyasını kontrol edin.");
-        // İsterseniz burada kullanıcıya bir hata mesajı gösterebilirsiniz.
-    }
-
 
     // Haritayı 'map' div'i üzerinde başlat
     mapRef.current = L.map('map').setView([30, 10], 2);
@@ -85,16 +77,13 @@ const Map = () => {
             .openPopup();
 
           // Rota çizimini başlat
-           if (accessToken && accessToken !== "YOUR_MAPBOX_ACCESS_TOKEN_HERE") {
-                routingControl.current = L.Routing.control({
-                    waypoints: [startPoint.current, endPoint.current],
-                    router: (L.Routing as any).mapbox(accessToken),
-                    // Kendi özel işaretçilerimizi kullandığımız için eklentinin varsayılan işaretçilerini oluşturmasını engelle
-                    createMarker: function () {
-                    return null;
-                    },
-                }).addTo(mapRef.current);
-           }
+          routingControl.current = L.Routing.control({
+            waypoints: [startPoint.current, endPoint.current],
+             // Kendi özel işaretçilerimizi kullandığımız için eklentinin varsayılan işaretçilerini oluşturmasını engelle
+            createMarker: function () {
+              return null;
+            },
+          }).addTo(mapRef.current);
         }
       }
       // DURUM 1: Henüz başlangıç noktası seçilmemişse (ilk tıklama)
@@ -120,7 +109,7 @@ const Map = () => {
         mapRef.current = null;
       }
     };
-  }, [accessToken]); // useEffect'i accessToken değiştiğinde yeniden çalışacak şekilde ayarla
+  }, []); // Boş bağımlılık dizisi, bu etkinin yalnızca bir kez çalışmasını sağlar.
 
   // Leaflet haritasının render edileceği div
   return <div id="map" style={{ height: '100vh', width: '100vw' }} />;
