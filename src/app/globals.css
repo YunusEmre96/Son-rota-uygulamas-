@@ -3,24 +3,24 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'PT Sans', sans-serif;
 }
 
 @layer base {
   :root {
-    --background: 0 0% 94%;
+    --background: 240 10% 96%; /* #F0F0F0 */
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 197 71% 73%;
+    --primary: 197 71% 73%; /* #87CEEB */
     --primary-foreground: 0 0% 9%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
-    --accent: 120 73% 75%;
+    --accent: 120 73% 75%; /* #90EE90 */
     --accent-foreground: 120 73% 15%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -85,4 +85,26 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.leaflet-routing-container {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
+
+.leaflet-routing-alt, .leaflet-routing-alt h2 {
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.leaflet-touch .leaflet-routing-icon {
+  background-color: hsl(var(--primary));
+  border-radius: 50%;
+  color: hsl(var(--primary-foreground));
+}
+
+.leaflet-routing-instructions {
+  color: hsl(var(--muted-foreground));
 }

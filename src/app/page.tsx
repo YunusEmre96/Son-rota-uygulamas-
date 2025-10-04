@@ -1,10 +1,4 @@
-import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
-
-const MapLoader = dynamic(() => import('@/components/map-loader'), {
-  ssr: false,
-  loading: () => <Skeleton className="h-screen w-screen rounded-none" />,
-});
+import MapLoader from '@/components/map-loader';
 
 export default function Home() {
   return (
