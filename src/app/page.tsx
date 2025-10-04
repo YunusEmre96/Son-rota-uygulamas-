@@ -1,7 +1,15 @@
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const MapLoader = dynamic(() => import('@/components/map-loader'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-screen w-screen rounded-none" />,
+});
+
 export default function Home() {
   return (
-    <main>
-      <p>Get started by editing <code>src/app/page.tsx</code></p>
+    <main className="h-screen w-screen">
+      <MapLoader />
     </main>
   );
 }
