@@ -18,7 +18,7 @@ L.Icon.Default.mergeOptions({
 
 // Rota çizim mantığını yönetecek ayrı bir bileşen.
 function Routing() {
-  // useMap, üst MapContainer bileşeninin harita örneğini (map instance) verir.
+  // useMapEvents, üst MapContainer bileşeninin harita örneğini (map instance) verir ve olayları dinler.
   const map = useMapEvents({
     // Haritaya her tıklandığında bu fonksiyon çalışır.
     click(e) {
@@ -38,7 +38,7 @@ function Routing() {
         routingControl.setWaypoints([waypoints[0].latLng, L.latLng(newWaypoint.lat, newWaypoint.lng)]);
       } else {
         // Eğer hem başlangıç hem bitiş varsa, her şeyi sıfırla ve tıklanan yeri yeni başlangıç noktası yap.
-        routingControl.setWaypoints([L.latLng(newWaypoint.lat, newWaypoint.lng), null]);
+        routingControl.setWaypoints([L.latLng(newWaypoint.lat, newWaypoint.lng)]);
       }
     },
   });
@@ -50,7 +50,7 @@ function Routing() {
     // Bu, React'in geliştirme modundaki çift render etme sorununu engeller.
     if (!(map as any)._routing) {
         const routingControl = L.Routing.control({
-            waypoints: [null, null], // Başlangıçta boş ara noktalar
+            waypoints: [], // Başlangıçta boş ara noktalar
             routeWhileDragging: true, // Sürüklerken rotayı güncelle
             show: true, // Kontrol panelini göster
             lineOptions: {

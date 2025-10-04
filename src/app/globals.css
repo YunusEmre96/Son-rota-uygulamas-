@@ -87,11 +87,13 @@ body {
   }
 }
 
+/* Leaflet Rota Konteyner Stilleri */
 .leaflet-routing-container {
   background-color: hsl(var(--card));
   color: hsl(var(--card-foreground));
   border-radius: var(--radius);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border: 1px solid hsl(var(--border));
   padding: 1rem;
 }
 
