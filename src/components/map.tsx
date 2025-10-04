@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import 'leaflet-routing-machine';
 
-// Leaflet'in varsayılan ikon yollarını Webpack gibi paketleyicilerde düzeltmek için standart çözüm.
+// Leaflet'in varsayılan ikon yollarını düzeltmek için standart çözüm.
 // Bu, işaretçi ikonlarının doğru görüntülenmesini sağlar.
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -35,6 +35,19 @@ const Map = () => {
     }
     
     const map = mapRef.current;
+
+    // Yardımcı fonksiyon: Haritadaki işaretçileri ve rotayı temizler.
+    const clearMap = () => {
+        if (startMarker.current) map.removeLayer(startMarker.current);
+        if (endMarker.current) map.removeLayer(endMarker.current);
+        if (routingControl.current) map.removeControl(routingControl.current);
+        
+        startPoint.current = null;
+        endPoint.current = null;
+        startMarker.current = null;
+        endMarker.current = null;
+        routingControl.current = null;
+    }
     
     // Yardımcı fonksiyon: Başlangıç işaretçisini oluşturur ve ayarlar.
     const createStartMarker = (latlng: L.LatLng) => {
@@ -48,19 +61,7 @@ const Map = () => {
     const handleMapClick = (e: L.LeafletMouseEvent) => {
       // DURUM 3: Başlangıç ve bitiş seçiliyse (üçüncü tıklama - Sıfırlama)
       if (startPoint.current && endPoint.current) {
-        // Haritayı temizle
-        if (startMarker.current) map.removeLayer(startMarker.current);
-        if (endMarker.current) map.removeLayer(endMarker.current);
-        if (routingControl.current) map.removeControl(routingControl.current);
-        
-        // Değişkenleri sıfırla
-        startPoint.current = null;
-        endPoint.current = null;
-        startMarker.current = null;
-        endMarker.current = null;
-        routingControl.current = null;
-
-        // Yeni başlangıç noktasını ayarla
+        clearMap();
         createStartMarker(e.latlng);
       }
       // DURUM 2: Başlangıç seçilmiş ama bitiş seçilmemişse (ikinci tıklama)
