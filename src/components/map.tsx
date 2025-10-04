@@ -87,10 +87,11 @@ const Map = () => {
 
     // If there is at least one point, create and add markers.
     if (points.length > 0) {
-      const markerIcon: DivIcon = L.divIcon({
-          className: 'leaflet-div-icon', // Uses the custom style from globals.css
-          iconSize: [20, 20],
-          iconAnchor: [10, 10]
+      const markerIcon = L.divIcon({
+          className: 'leaflet-routing-icon',
+          html: `<span style="display: block; width: 100%; height: 100%; border-radius: 50%; background-color: hsl(var(--accent)); box-shadow: 0 0 0 3px hsl(var(--accent-foreground));"></span>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
       });
 
       points.forEach(point => {
@@ -118,7 +119,7 @@ const Map = () => {
     }
   }, [points]);
 
-  return <div ref={mapContainerRef} className="h-full w-full z-0" />;
+  return <div ref={mapContainerRef} className="absolute inset-0 z-0" />;
 };
 
 export default Map;
