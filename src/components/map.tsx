@@ -25,6 +25,15 @@ const Map = () => {
     const L = window.L;
     if (!L) return;
 
+    // Fix for default Leaflet marker icons not appearing
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
+
+
     // Initialize map, centered on a default location (e.g., Istanbul).
     mapRef.current = L.map(mapContainerRef.current, {
         zoomControl: false // Disable default zoom to add it back in a better position.
@@ -87,15 +96,10 @@ const Map = () => {
 
     // If there is at least one point, create and add markers.
     if (points.length > 0) {
-      const markerIcon = L.divIcon({
-          className: 'leaflet-routing-icon',
-          html: `<span style="display: block; width: 100%; height: 100%; border-radius: 50%; background-color: hsl(var(--accent)); box-shadow: 0 0 0 3px hsl(var(--accent-foreground));"></span>`,
-          iconSize: [14, 14],
-          iconAnchor: [7, 7]
-      });
-
-      points.forEach(point => {
-        const marker = L.marker(point, { icon: markerIcon }).addTo(mapRef.current!);
+       points.forEach((point, index) => {
+        const marker = L.marker(point, {
+          title: index === 0 ? 'Başlangıç' : 'Bitiş'
+        }).addTo(mapRef.current!);
         markersRef.current.push(marker);
       });
     }
@@ -112,7 +116,10 @@ const Map = () => {
         draggableWaypoints: false,
         fitSelectedRoutes: true,
         show: true, // Ensures the instructions panel is visible.
-        createMarker: () => null // Disable default A/B markers, we use our own.
+        createMarker: (i: number, waypoint: any, n: number) => {
+            // Use our custom markers, so disable default marker creation
+            return null;
+        }
       }).addTo(mapRef.current);
 
       routingControlRef.current = routingControl;

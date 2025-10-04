@@ -3,9 +3,11 @@ import MapLoader from '@/components/map-loader';
 
 export default function Home() {
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-background">
+    <div className="h-screen w-screen flex flex-col">
       <Header />
-      <MapLoader />
-    </main>
+      <main className="relative flex-1">
+        <MapLoader />
+      </main>
+    </div>
   );
 }
