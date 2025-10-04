@@ -101,10 +101,10 @@ body {
   color: hsl(var(--card-foreground)) !important;
 }
 
-.leaflet-touch .leaflet-routing-icon {
-  background-color: hsl(var(--primary));
-  border-radius: 50%;
-  color: hsl(var(--primary-foreground));
+.leaflet-routing-icon, .leaflet-routing-icon div {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .leaflet-routing-instructions {

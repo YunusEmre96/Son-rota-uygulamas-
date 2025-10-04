@@ -54,13 +54,17 @@ function Routing() {
             routeWhileDragging: true, // Sürüklerken rotayı güncelle
             show: true, // Kontrol panelini göster
             lineOptions: {
-                styles: [{ color: 'hsl(var(--primary))', opacity: 1, weight: 5 }] // Rota çizgisinin stili
+                styles: [{ color: 'hsl(var(--accent))', opacity: 1, weight: 5 }] // Rota çizgisinin stili
             },
             createMarker: function(i, waypoint, n) {
                 // Başlangıç ve bitiş için özel ikonlar
                 return L.marker(waypoint.latLng, {
                   draggable: true,
-                  icon: new L.Icon.Default()
+                  icon: L.divIcon({
+                    className: 'leaflet-routing-icon',
+                    html: `<div style="background-color: hsl(var(--primary)); border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">${i === 0 ? 'A' : 'B'}</div>`,
+                    iconSize: [24, 24]
+                  })
                 });
             }
         }).addTo(map);
