@@ -22,6 +22,7 @@ const Map = () => {
   const endPoint = useRef<L.LatLng | null>(null);
   const startMarker = useRef<L.Marker | null>(null);
   const endMarker = useRef<L.Marker | null>(null);
+  const routingControl = useRef<L.Routing.Control | null>(null);
 
   useEffect(() => {
     // Harita zaten başlatılmışsa tekrar başlatmayı önle.
@@ -42,12 +43,14 @@ const Map = () => {
         // Haritayı temizle
         if (startMarker.current) map.removeLayer(startMarker.current);
         if (endMarker.current) map.removeLayer(endMarker.current);
+        if (routingControl.current) map.removeControl(routingControl.current);
         
         // Değişkenleri sıfırla
         startPoint.current = null;
         endPoint.current = null;
         startMarker.current = null;
         endMarker.current = null;
+        routingControl.current = null;
 
         // Yeni başlangıç noktasını ayarla
         startPoint.current = e.latlng;
@@ -63,6 +66,14 @@ const Map = () => {
           .addTo(map)
           .bindPopup('Bitiş Noktası')
           .openPopup();
+
+        // Rota çizimini başlat
+        routingControl.current = L.Routing.control({
+            waypoints: [startPoint.current, endPoint.current],
+            routeWhileDragging: true,
+            createMarker: function() { return null; }
+        }).addTo(map);
+
       }
       // DURUM 1: Henüz başlangıç noktası seçilmemişse (ilk tıklama)
       else {
