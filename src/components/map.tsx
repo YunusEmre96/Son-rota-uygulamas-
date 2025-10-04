@@ -23,6 +23,7 @@ const Map = () => {
   const startMarker = useRef<L.Marker | null>(null);
   const endMarker = useRef<L.Marker | null>(null);
   const routingControl = useRef<L.Routing.Control | null>(null);
+  const checkpointMarkers = useRef<L.Marker[]>([]);
 
   useEffect(() => {
     // Harita zaten başlatılmışsa tekrar başlatmayı önle.
@@ -33,31 +34,35 @@ const Map = () => {
         attribution: '© OpenStreetMap contributors',
       }).addTo(mapRef.current);
     }
-    
+
     const map = mapRef.current;
 
-    // Yardımcı fonksiyon: Haritadaki işaretçileri ve rotayı temizler.
+    // Yardımcı fonksiyon: Haritadaki tüm işaretçileri ve rotayı temizler.
     const clearMap = () => {
-        if (startMarker.current) map.removeLayer(startMarker.current);
-        if (endMarker.current) map.removeLayer(endMarker.current);
-        if (routingControl.current) map.removeControl(routingControl.current);
-        
-        startPoint.current = null;
-        endPoint.current = null;
-        startMarker.current = null;
-        endMarker.current = null;
-        routingControl.current = null;
-    }
-    
+      if (startMarker.current) map.removeLayer(startMarker.current);
+      if (endMarker.current) map.removeLayer(endMarker.current);
+      if (routingControl.current) map.removeControl(routingControl.current);
+      
+      checkpointMarkers.current.forEach(marker => map.removeLayer(marker));
+      checkpointMarkers.current = [];
+
+      startPoint.current = null;
+      endPoint.current = null;
+      startMarker.current = null;
+      endMarker.current = null;
+      routingControl.current = null;
+    };
+
     // Yardımcı fonksiyon: Başlangıç işaretçisini oluşturur ve ayarlar.
     const createStartMarker = (latlng: L.LatLng) => {
-        startPoint.current = latlng;
-        startMarker.current = L.marker(startPoint.current)
-          .addTo(map)
-          .bindPopup('Başlangıç Noktası')
-          .openPopup();
-    }
+      startPoint.current = latlng;
+      startMarker.current = L.marker(startPoint.current)
+        .addTo(map)
+        .bindPopup('Başlangıç Noktası')
+        .openPopup();
+    };
 
+    // Haritaya tıklama olayını yöneten fonksiyon.
     const handleMapClick = (e: L.LeafletMouseEvent) => {
       // DURUM 3: Başlangıç ve bitiş seçiliyse (üçüncü tıklama - Sıfırlama)
       if (startPoint.current && endPoint.current) {
@@ -73,12 +78,40 @@ const Map = () => {
           .openPopup();
 
         // Rota çizimini başlat
-        routingControl.current = L.Routing.control({
-            waypoints: [startPoint.current, endPoint.current],
-            routeWhileDragging: true,
-            createMarker: function() { return null; }
+        const control = L.Routing.control({
+          waypoints: [startPoint.current, endPoint.current],
+          routeWhileDragging: true,
+          createMarker: function () {
+            return null;
+          },
         }).addTo(map);
 
+        // Rota bulunduğunda kontrol noktalarını ekle
+        control.on('routesfound', function (e) {
+          const routes = e.routes;
+          const route = routes[0];
+          if (!route) return;
+
+          let totalDistance = 0;
+          let nextCheckpoint = 100000; // 100 km (metre cinsinden)
+
+          route.coordinates.forEach((coord, index) => {
+            if (index > 0) {
+              const prevCoord = route.coordinates[index - 1];
+              totalDistance += prevCoord.distanceTo(coord);
+            }
+
+            if (totalDistance >= nextCheckpoint) {
+                const checkpointMarker = L.marker(coord)
+                    .addTo(map)
+                    .bindPopup(`Kontrol Noktası: ${Math.round(nextCheckpoint / 1000)} km`);
+                checkpointMarkers.current.push(checkpointMarker);
+                nextCheckpoint += 100000;
+            }
+          });
+        });
+
+        routingControl.current = control;
       }
       // DURUM 1: Henüz başlangıç noktası seçilmemişse (ilk tıklama)
       else {
