@@ -86,27 +86,3 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
-/* Leaflet Rota Konteyner Stilleri */
-.leaflet-routing-container {
-  background-color: hsl(var(--card));
-  color: hsl(var(--card-foreground));
-  border-radius: var(--radius);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  border: 1px solid hsl(var(--border));
-  padding: 1rem;
-}
-
-.leaflet-routing-alt, .leaflet-routing-alt h2 {
-  color: hsl(var(--card-foreground)) !important;
-}
-
-.leaflet-routing-icon, .leaflet-routing-icon div {
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.leaflet-routing-instructions {
-  color: hsl(var(--muted-foreground));
-}
