@@ -4,11 +4,10 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-// Import the routing machine library to ensure it's loaded
 import 'leaflet-routing-machine';
 
-// This is a standard fix for Leaflet's default icon paths in module bundlers like Webpack.
-// It ensures that marker icons are displayed correctly.
+// Bu, Leaflet'in varsayılan ikon yollarını Webpack gibi paketleyicilerde düzeltmek için standart bir çözümdür.
+// İşaretçi ikonlarının doğru görüntülenmesini sağlar.
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -18,102 +17,112 @@ L.Icon.Default.mergeOptions({
 });
 
 const Map = () => {
-  // We use useRef to hold mutable values that persist across renders without causing re-renders.
-  // This is perfect for storing the map instance and other Leaflet-specific objects.
+  // Yeniden render tetiklememesi gereken harita örneği, işaretçiler ve rota kontrolü gibi
+  // Leaflet'e özgü nesneleri saklamak için useRef kullanıyoruz.
   const mapRef = useRef<L.Map | null>(null);
   const startPoint = useRef<L.LatLng | null>(null);
   const endPoint = useRef<L.LatLng | null>(null);
   const startMarker = useRef<L.Marker | null>(null);
   const endMarker = useRef<L.Marker | null>(null);
   const routingControl = useRef<L.Routing.Control | null>(null);
+  const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-  // The useEffect hook with an empty dependency array runs only once after the component mounts.
-  // This is the correct place to initialize the map, as the 'map' div is guaranteed to be in the DOM.
+
+  // Boş bağımlılık dizisine sahip useEffect kancası, bileşen DOM'a eklendikten sonra yalnızca bir kez çalışır.
+  // Bu, 'map' div'inin DOM'da bulunması garanti edildiği için haritayı başlatmak için doğru yerdir.
   useEffect(() => {
-    // If the map is already initialized, do nothing. This prevents re-initialization on hot reloads.
+    // Harita zaten başlatılmışsa, tekrar başlatmayı önle.
     if (mapRef.current) return;
 
-    // Initialize the map on the 'map' div
+    if (!accessToken || accessToken === "YOUR_MAPBOX_ACCESS_TOKEN_HERE") {
+        console.error("Mapbox API anahtarı eksik! Lütfen .env.local dosyasını kontrol edin.");
+        // İsterseniz burada kullanıcıya bir hata mesajı gösterebilirsiniz.
+    }
+
+
+    // Haritayı 'map' div'i üzerinde başlat
     mapRef.current = L.map('map').setView([30, 10], 2);
 
-    // Add the OpenStreetMap tile layer
+    // OpenStreetMap katmanını haritaya ekle
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
     }).addTo(mapRef.current);
 
-    // This function will handle all map click events
+    // Harita tıklama olaylarını yönetecek fonksiyon
     const handleMapClick = (e: L.LeafletMouseEvent) => {
-      // Third click or more: Reset everything
+      // DURUM 3: Başlangıç ve bitiş noktaları zaten seçiliyse (üçüncü tıklama - Sıfırlama)
       if (startPoint.current && endPoint.current) {
-        // Clear existing layers and controls from the map
+        // Mevcut katmanları ve kontrolü haritadan temizle
         if (mapRef.current) {
-            if(startMarker.current) mapRef.current.removeLayer(startMarker.current);
-            if(endMarker.current) mapRef.current.removeLayer(endMarker.current);
-            if(routingControl.current) mapRef.current.removeControl(routingControl.current);
+          if (startMarker.current) mapRef.current.removeLayer(startMarker.current);
+          if (endMarker.current) mapRef.current.removeLayer(endMarker.current);
+          if (routingControl.current) mapRef.current.removeControl(routingControl.current);
         }
-        
-        // Reset all ref values to their initial state
+
+        // Tüm referans değerlerini başlangıç durumuna döndür
         startPoint.current = null;
         endPoint.current = null;
         startMarker.current = null;
         endMarker.current = null;
         routingControl.current = null;
-        
-        // The current click becomes the new starting point
+
+        // Bu tıklama yeni başlangıç noktası olur
         startPoint.current = e.latlng;
         if (mapRef.current) {
-            startMarker.current = L.marker(startPoint.current)
-              .addTo(mapRef.current)
-              .bindPopup('Başlangıç Noktası')
-              .openPopup();
+          startMarker.current = L.marker(startPoint.current)
+            .addTo(mapRef.current)
+            .bindPopup('Başlangıç Noktası')
+            .openPopup();
         }
-      } 
-      // Second click: Set the end point and draw the route
+      }
+      // DURUM 2: Başlangıç seçilmiş ama bitiş seçilmemişse (ikinci tıklama)
       else if (startPoint.current && !endPoint.current) {
         endPoint.current = e.latlng;
         if (mapRef.current) {
-            endMarker.current = L.marker(endPoint.current)
-              .addTo(mapRef.current)
-              .bindPopup('Bitiş Noktası')
-              .openPopup();
+          endMarker.current = L.marker(endPoint.current)
+            .addTo(mapRef.current)
+            .bindPopup('Bitiş Noktası')
+            .openPopup();
 
-            // Create the routing control
-            routingControl.current = L.Routing.control({
-                waypoints: [startPoint.current, endPoint.current],
-                // We use our own markers, so disable the default ones from the routing machine
-                createMarker: function () {
-                  return null;
-                },
-                routeWhileDragging: false, // Optional: disable route recalculation on marker drag
-              }).addTo(mapRef.current);
+          // Rota çizimini başlat
+           if (accessToken && accessToken !== "YOUR_MAPBOX_ACCESS_TOKEN_HERE") {
+                routingControl.current = L.Routing.control({
+                    waypoints: [startPoint.current, endPoint.current],
+                    router: (L.Routing as any).mapbox(accessToken),
+                    // Kendi özel işaretçilerimizi kullandığımız için eklentinin varsayılan işaretçilerini oluşturmasını engelle
+                    createMarker: function () {
+                    return null;
+                    },
+                }).addTo(mapRef.current);
+           }
         }
       }
-      // First click: Set the start point
+      // DURUM 1: Henüz başlangıç noktası seçilmemişse (ilk tıklama)
       else {
         startPoint.current = e.latlng;
         if (mapRef.current) {
-            startMarker.current = L.marker(startPoint.current)
-              .addTo(mapRef.current)
-              .bindPopup('Başlangıç Noktası')
-              .openPopup();
+          startMarker.current = L.marker(startPoint.current)
+            .addTo(mapRef.current)
+            .bindPopup('Başlangıç Noktası')
+            .openPopup();
         }
       }
     };
 
-    // Attach the click event listener to the map
+    // Tıklama olay dinleyicisini haritaya bağla
     mapRef.current.on('click', handleMapClick);
 
-    // Cleanup function: This will be called when the component is unmounted.
-    // It's important for preventing memory leaks.
+    // Temizleme fonksiyonu: Bileşen kaldırıldığında çağrılır.
+    // Bellek sızıntılarını önlemek için önemlidir.
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
     };
-  }, []); // Empty dependency array means this effect runs only once on mount.
+  }, [accessToken]); // useEffect'i accessToken değiştiğinde yeniden çalışacak şekilde ayarla
 
-  // This is the div where the Leaflet map will be rendered.
+  // Leaflet haritasının render edileceği div
   return <div id="map" style={{ height: '100vh', width: '100vw' }} />;
 };
 

@@ -1,11 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const Map = dynamic(() => import('@/components/map'), {
   ssr: false,
-  loading: () => <Skeleton className="h-screen w-screen" />,
+  loading: () => <div className="h-screen w-screen bg-gray-200" />,
 });
 
 export default function Home() {
