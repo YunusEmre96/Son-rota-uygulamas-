@@ -33,11 +33,19 @@ const Map = () => {
         attribution: '© OpenStreetMap contributors',
       }).addTo(mapRef.current);
     }
+    
+    const map = mapRef.current;
+    
+    // Yardımcı fonksiyon: Başlangıç işaretçisini oluşturur ve ayarlar.
+    const createStartMarker = (latlng: L.LatLng) => {
+        startPoint.current = latlng;
+        startMarker.current = L.marker(startPoint.current)
+          .addTo(map)
+          .bindPopup('Başlangıç Noktası')
+          .openPopup();
+    }
 
     const handleMapClick = (e: L.LeafletMouseEvent) => {
-      const map = mapRef.current;
-      if (!map) return;
-
       // DURUM 3: Başlangıç ve bitiş seçiliyse (üçüncü tıklama - Sıfırlama)
       if (startPoint.current && endPoint.current) {
         // Haritayı temizle
@@ -53,11 +61,7 @@ const Map = () => {
         routingControl.current = null;
 
         // Yeni başlangıç noktasını ayarla
-        startPoint.current = e.latlng;
-        startMarker.current = L.marker(startPoint.current)
-          .addTo(map)
-          .bindPopup('Başlangıç Noktası')
-          .openPopup();
+        createStartMarker(e.latlng);
       }
       // DURUM 2: Başlangıç seçilmiş ama bitiş seçilmemişse (ikinci tıklama)
       else if (startPoint.current && !endPoint.current) {
@@ -77,20 +81,16 @@ const Map = () => {
       }
       // DURUM 1: Henüz başlangıç noktası seçilmemişse (ilk tıklama)
       else {
-        startPoint.current = e.latlng;
-        startMarker.current = L.marker(startPoint.current)
-          .addTo(map)
-          .bindPopup('Başlangıç Noktası')
-          .openPopup();
+        createStartMarker(e.latlng);
       }
     };
 
-    mapRef.current.on('click', handleMapClick);
+    map.on('click', handleMapClick);
 
     // Temizleme fonksiyonu: Bileşen kaldırıldığında olay dinleyicisini kaldırır.
     return () => {
-      if (mapRef.current) {
-        mapRef.current.off('click', handleMapClick);
+      if (map) {
+        map.off('click', handleMapClick);
       }
     };
   }, []); // Boş bağımlılık dizisi, bu etkinin yalnızca bir kez çalışmasını sağlar.
